@@ -8,6 +8,10 @@ from typing import Optional, AsyncGenerator
 import uvicorn
 import os
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+
+# 加载环境变量
+load_dotenv()
 
 
 # 配置管理
@@ -143,7 +147,7 @@ async def generate_chat_stream(
             elif event.type == "response.output_text.delta":
                 # 发送文本增量，需要转义特殊字符
                 import json
-                text = json.dumps(event.delta)
+                text = json.dumps(event.delta)  # event.delta 是文本字符串
                 yield f'data: {{"type": "delta", "text": {text}}}\n\n'
                 
             elif event.type == "response.output_text.done":
