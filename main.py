@@ -127,46 +127,73 @@ async def generate_chat_stream(
             ],
             previous_response_id=previous_response_id,
             stream=True,
+            reasoning={
+                "effort": "medium",
+                "summary": "auto",
+            },
         )
         
         for event in response:
             if event.type == "response.created":
                 # 保存新的 response_id
                 session_store[session_id] = event.response.id
-                yield f'data: {{"type": "created", "id": "{event.response.id}"}}\n\n'
-                
+                yield f'data: {{"type": "created", "id": "{event.response.id}"}}\n\n'  
             elif event.type == "response.in_progress":
-                yield f'data: {{"type": "in_progress"}}\n\n'
-                
+                yield f'data: {{"type": "in_progress"}}\n\n'     
             elif event.type == "response.output_item.added":
                 yield f'data: {{"type": "output_item_added"}}\n\n'
-                
             elif event.type == "response.content_part.added":
-                yield f'data: {{"type": "content_part_added"}}\n\n'
-                
+                yield f'data: {{"type": "content_part_added"}}\n\n'  
             elif event.type == "response.output_text.delta":
                 # 发送文本增量，需要转义特殊字符
-                import json
-                text = json.dumps(event.delta)  # event.delta 是文本字符串
-                yield f'data: {{"type": "delta", "text": {text}}}\n\n'
-                
+                # import json
+                # text = json.dumps(event.delta)  # event.delta 是文本字符串
+                # yield f'data: {{"type": "delta", "text": {text}}}\n\n'
+                pass     
             elif event.type == "response.output_text.done":
-                yield f'data: {{"type": "text_done"}}\n\n'
-                
+                import json
+                text = json.dumps(event.text)  # event.text 是文本字符串
+                print(f"完成输出文本: {text}")
+                yield f'data: {{"type": "delta", "text": {text}}}\n\n' 
+                pass
+                # yield f'data: {{"type": "text_done"}}\n\n'   
             elif event.type == "response.content_part.done":
                 yield f'data: {{"type": "content_part_done"}}\n\n'
-                
             elif event.type == "response.output_item.done":
                 yield f'data: {{"type": "output_item_done"}}\n\n'
-                
             elif event.type == "response.completed":
                 yield f'data: {{"type": "completed"}}\n\n'
-                
+            elif event.type == "response.web_search_call.in_progress":
+                yield f'data: {{"type": "web_search_in_progress"}}\n\n'
+            elif event.type == "response.web_search_call.searching":
+                yield f'data: {{"type": "web_search_searching"}}\n\n'
+            elif event.type == "response.web_search_call.completed":
+                yield f'data: {{"type": "web_search_completed"}}\n\n'
+            elif event.type == "response.output_text.annotation.added":
+                yield f'data: {{"type": "annotation_added"}}\n\n'
+            elif event.type == "response.reasoning_summary_part.added":
+                yield f'data: {{"type": "reasoning_summary_part_added"}}\n\n'
+            elif event.type == "response.reasoning_summary_text.delta":
+                # import json
+                # text = json.dumps(event.delta)  # event.delta 是文本字符串
+                # yield f'data: {{"type": "delta", "text": {text}}}\n\n' 
+                pass
+            elif event.type == "response.reasoning_summary_text.done":
+                yield f'data: {{"type": "reasoning_summary_text_done"}}\n\n'
+            elif event.type == "response.reasoning_summary_part.done":
+                yield f'data: {{"type": "reasoning_summary_part_done"}}\n\n'
+                print(f"完成推理总结部分: {event}")
+            elif event.type == "response.incomplete":
+                yield f'data: {{"type": "incomplete"}}\n\n'
             else:
                 yield f'data: {{"type": "unknown", "event": "{str(event)}"}}\n\n'
+                print(f"未知事件类型: {event.type}")
+                print(event)
                 
     except Exception as e:
-        yield f"data: {{'type': 'error', 'message': '{str(e)}'}}\n\n"
+        import json
+        error_msg = json.dumps(str(e))
+        yield f'data: {{"type": "error", "message": {error_msg}}}\n\n'
     finally:
         yield "data: [DONE]\n\n"
 
