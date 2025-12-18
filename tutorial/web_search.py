@@ -36,7 +36,7 @@ def get_client() -> OpenAI:
 def get_tools():
     tools = [
         {
-            "type": "web_search",
+            "type": "web_search_preview",
             "user_location": {
                 "type": "approximate",
                 "country": "CN",

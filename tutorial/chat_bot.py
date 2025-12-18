@@ -45,7 +45,7 @@ def get_client() -> OpenAI:
 def get_tools():
     tools = [
         {
-            "type": "web_search",
+            "type": "web_search_preview",
         }
     ]
     return tools
